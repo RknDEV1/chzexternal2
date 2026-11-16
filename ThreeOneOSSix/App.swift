@@ -251,6 +251,14 @@ class AppState: ObservableObject {
         }
     }
 
+    /// Force a fresh attempt even after a previous failure (UI RETRY).
+    func retryKernelExploit() {
+        guard !kernelExploitRunning else { return }
+        exploitStatus = .notStarted
+        autoRunAttempted = false
+        runKernelExploitIfNeeded()
+    }
+
     func runKernelExploitIfNeeded() {
         refreshKernelExploitStatus()
         guard !kernelExploitRunning,
