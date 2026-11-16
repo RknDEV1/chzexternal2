@@ -9,7 +9,9 @@ struct RakiFunctionsView: View {
     @State private var diagnosticText = "Pronto para testar"
     @State private var diagnosticDetails = "Toque em uma ação para iniciar o diagnóstico."
 
-    private var patch: PatchLibraryItem? { store.items.first }
+    private var patch: PatchLibraryItem? {
+        store.items.first(where: { $0.packageURL.lastPathComponent == "HS-PESCO-O-2-2.3105" }) ?? store.items.first
+    }
 
     private var isActive: Bool {
         guard let patch else { return false }

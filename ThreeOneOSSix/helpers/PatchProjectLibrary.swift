@@ -59,10 +59,10 @@ enum PatchProjectLibrary {
         fileManager: FileManager
     ) {
         guard let bundledURL = Bundle.main.url(
-            forResource: "HS-PESCO-O-2-1",
+            forResource: "HS-PESCO-O-2-2",
             withExtension: "3105"
         ) else { return }
-        let destination = root.appendingPathComponent("HS-PESCO-O-2-1.3105")
+        let destination = root.appendingPathComponent("HS-PESCO-O-2-2.3105")
         guard !fileManager.fileExists(atPath: destination.path) else { return }
         do {
             try fileManager.copyItem(at: bundledURL, to: destination)

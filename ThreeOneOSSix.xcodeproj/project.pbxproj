@@ -48,7 +48,7 @@
 		3105B221 /* PatchProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105B121; };
 		3105B222 /* PatchProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105B122; };
 		3106R300 /* RakiFunctionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3106R301; };
-		3106R302 /* HS-PESCO-O-2-1.3105 in Resources */ = {isa = PBXBuildFile; fileRef = 3106R303; };
+		3106R302 /* HS-PESCO-O-2-2.3105 in Resources */ = {isa = PBXBuildFile; fileRef = 3106R303; };
 		3105C200 /* PatchDraftService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105C100; };
 		3105C201 /* PatchDraftCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105C101; };
 		3105C202 /* FolderPatchSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105C102; };
@@ -225,7 +225,7 @@
 		3105B121 /* PatchProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchProjectsView.swift; sourceTree = "<group>"; };
 		3105B122 /* PatchProjectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchProjectEditorView.swift; sourceTree = "<group>"; };
 		3106R301 /* RakiFunctionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RakiFunctionsView.swift; sourceTree = "<group>"; };
-		3106R303 /* HS-PESCO-O-2-1.3105 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HS-PESCO-O-2-1.3105"; sourceTree = "<group>"; };
+		3106R303 /* HS-PESCO-O-2-2.3105 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HS-PESCO-O-2-2.3105"; sourceTree = "<group>"; };
 		3105C100 /* PatchDraftService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchDraftService.swift; sourceTree = "<group>"; };
 		3105C101 /* PatchDraftCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchDraftCoordinator.swift; sourceTree = "<group>"; };
 		3105C102 /* FolderPatchSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPatchSelectionView.swift; sourceTree = "<group>"; };
@@ -373,7 +373,7 @@
 				3106W032 /* ThreeOneOSSix.entitlements */,
 				3105A120 /* Localizable.strings */,
 				3105A031 /* Assets.xcassets */,
-				3106R303 /* HS-PESCO-O-2-1.3105 */,
+				3106R303 /* HS-PESCO-O-2-2.3105 */,
 			);
 			path = ThreeOneOSSix;
 			sourceTree = "<group>";
