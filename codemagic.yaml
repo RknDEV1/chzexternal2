@@ -1,0 +1,53 @@
+workflows:
+  build-3106-v325:
+    name: 3106 v3.2.5 unsigned IPA
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    environment:
+      xcode: latest
+
+    scripts:
+      - name: Checkout da tag v3.2.5
+        script: |
+          set -euo pipefail
+          git fetch --force origin refs/tags/v3.2.5:refs/tags/v3.2.5
+          git checkout --detach v3.2.5
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" ThreeOneOSSix/Info.plist)
+          BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" ThreeOneOSSix/Info.plist)
+          test "$VERSION" = "3.2.5"
+          test "$BUILD" = "24"
+          echo "Building 3106 $VERSION ($BUILD)"
+
+      - name: Testes de política
+        script: bash Tests/run_policy_tests.sh
+
+      - name: Build iOS sem assinatura
+        script: |
+          set -euo pipefail
+          xcodebuild \
+            -project ThreeOneOSSix.xcodeproj \
+            -scheme 3106 \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath "$CM_BUILD_DIR/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Empacotar IPA sem assinatura
+        script: |
+          set -euo pipefail
+          APP="$CM_BUILD_DIR/DerivedData/Build/Products/Release-iphoneos/3106.app"
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist")
+          BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Info.plist")
+          IPA="3106-${VERSION}-build${BUILD}-unsigned.ipa"
+          mkdir -p "$CM_BUILD_DIR/Payload"
+          cp -R "$APP" "$CM_BUILD_DIR/Payload/3106.app"
+          (cd "$CM_BUILD_DIR" && zip -qry "$IPA" Payload)
+          rm -rf "$CM_BUILD_DIR/Payload"
+          shasum -a 256 "$CM_BUILD_DIR/$IPA"
+
+    artifacts:
+      - 3106-*-unsigned.ipa
