@@ -47,6 +47,8 @@
 		3105B220 /* PatchProjectStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105B120; };
 		3105B221 /* PatchProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105B121; };
 		3105B222 /* PatchProjectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105B122; };
+		3106R300 /* RakiFunctionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3106R301; };
+		3106R302 /* HS-PESCO-O-2-1.3105 in Resources */ = {isa = PBXBuildFile; fileRef = 3106R303; };
 		3105C200 /* PatchDraftService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105C100; };
 		3105C201 /* PatchDraftCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105C101; };
 		3105C202 /* FolderPatchSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105C102; };
@@ -222,6 +224,8 @@
 		3105B120 /* PatchProjectStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchProjectStore.swift; sourceTree = "<group>"; };
 		3105B121 /* PatchProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchProjectsView.swift; sourceTree = "<group>"; };
 		3105B122 /* PatchProjectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchProjectEditorView.swift; sourceTree = "<group>"; };
+		3106R301 /* RakiFunctionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RakiFunctionsView.swift; sourceTree = "<group>"; };
+		3106R303 /* HS-PESCO-O-2-1.3105 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "HS-PESCO-O-2-1.3105"; sourceTree = "<group>"; };
 		3105C100 /* PatchDraftService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchDraftService.swift; sourceTree = "<group>"; };
 		3105C101 /* PatchDraftCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatchDraftCoordinator.swift; sourceTree = "<group>"; };
 		3105C102 /* FolderPatchSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPatchSelectionView.swift; sourceTree = "<group>"; };
@@ -369,6 +373,7 @@
 				3106W032 /* ThreeOneOSSix.entitlements */,
 				3105A120 /* Localizable.strings */,
 				3105A031 /* Assets.xcassets */,
+				3106R303 /* HS-PESCO-O-2-1.3105 */,
 			);
 			path = ThreeOneOSSix;
 			sourceTree = "<group>";
@@ -408,6 +413,7 @@
 				3105I101 /* FilesTabSwitcherView.swift */,
 				3105B121 /* PatchProjectsView.swift */,
 				3105B122 /* PatchProjectEditorView.swift */,
+				3106R301 /* RakiFunctionsView.swift */,
 				3105C102 /* FolderPatchSelectionView.swift */,
 				3105E101 /* CleanerView.swift */,
 				3105F106 /* WallpaperLabView.swift */,
@@ -628,6 +634,7 @@
 			files = (
 				3105A211,
 				3105A228,
+				3106R302,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -669,6 +676,7 @@
 				3105B220,
 				3105B221,
 				3105B222,
+				3106R300,
 				3105C200,
 				3105C201,
 				3105C202,

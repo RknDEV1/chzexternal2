@@ -47,7 +47,28 @@ enum PatchProjectLibrary {
         )
         let root = base.appendingPathComponent("PatchProjects", isDirectory: true)
         try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+        installBundledPatchIfNeeded(at: root, fileManager: fileManager)
         return root
+    }
+
+    /// Installs the bundled HS patch into the normal patch library on first run.
+    /// The bundled package is intentionally unprotected, so the single-screen
+    /// activation flow never needs to present a password prompt.
+    private static func installBundledPatchIfNeeded(
+        at root: URL,
+        fileManager: FileManager
+    ) {
+        guard let bundledURL = Bundle.main.url(
+            forResource: "HS-PESCO-O-2-1",
+            withExtension: "3105"
+        ) else { return }
+        let destination = root.appendingPathComponent("HS-PESCO-O-2-1.3105")
+        guard !fileManager.fileExists(atPath: destination.path) else { return }
+        do {
+            try fileManager.copyItem(at: bundledURL, to: destination)
+        } catch {
+            log("patch: bundled HS package install failed — \(error)")
+        }
     }
 
     static func backupRootURL(fileManager: FileManager = .default) throws -> URL {

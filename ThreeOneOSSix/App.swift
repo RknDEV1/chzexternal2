@@ -10,7 +10,7 @@ struct ThreeOneOSSixApp: App {
     @StateObject private var repositoryStore = PackageRepositoryStore()
     @StateObject private var migrationTaskCenter = MigrationTaskCenter()
     @AppStorage(AppLanguage.storageKey) private var languageCode = AppLanguage.english.rawValue
-    @State private var showOnboarding = OnboardingStore.shouldShow()
+    @State private var showOnboarding = false
     @State private var showAttribution = false
     @State private var updateOffer: AppUpdateChecker.Offer?
     @State private var configImportError: String?
@@ -19,6 +19,7 @@ struct ThreeOneOSSixApp: App {
 
     init() {
         setupLogCapture()
+        UserDefaults.standard.set(RakiAccentVariant.pink.rawValue, forKey: "raki.accent.variant")
         let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         let appBuild = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
         log("app: 3106 \(appVersion) (\(appBuild)) launching — iOS \(AppInfo.osVersion) (\(AppInfo.osBuild)) \(AppInfo.machineName)")
