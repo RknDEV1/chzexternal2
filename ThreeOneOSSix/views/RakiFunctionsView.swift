@@ -192,11 +192,9 @@ struct RakiFunctionsView: View {
                     let sourceProject = item.summary.schemaVersion >= 2 && item.canInspectContents
                         ? try PatchProjectLibrary.synchronizeWorkspace(item: item)
                         : baseProject
-                    let resolution = try DevicePatchService.resolveInstalledTarget(for: sourceProject)
-                    let project = resolution.project
-                    let remapState = resolution.wasRemapped ? "sim" : "não"
+                    let project = sourceProject
                     await MainActor.run {
-                        diagnosticDetails = "App selecionado: \(resolution.appName)\nBundle ID usado: \(resolution.bundleID)\nID remapeado automaticamente: \(remapState)"
+                        diagnosticDetails = "Bundle ID usado: \(project.allBundleIdentifiers.joined(separator: ", "))\nAlvo selecionado para aplicação."
                     }
                     for bundleID in project.allBundleIdentifiers {
                         await MainActor.run {
@@ -277,9 +275,6 @@ struct RakiFunctionsView: View {
     }
 
     private func diagnosticErrorText(_ error: PatchPackageError, action: String) -> String {
-        if case .applyFailedDetail(let detail) = error {
-            return "Erro técnico: applyFailed\nAção: \(action)\nDetalhe: \(detail)"
-        }
         if case .applyFailed = error {
             return "Erro técnico: applyFailed\nAção: \(action)\nContainer e arquivo-alvo foram localizados, mas a cópia/backup falhou. Verifique permissão de escrita e se o jogo está fechado."
         }
