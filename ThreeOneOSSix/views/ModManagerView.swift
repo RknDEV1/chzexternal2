@@ -1,7 +1,7 @@
 import UIKit
 import SwiftUI
 
-struct RakiFunctionsView: View {
+struct ModManagerView: View {
     @Environment(\.appLanguage) private var language
     @EnvironmentObject private var store: PatchProjectStore
     @EnvironmentObject private var appState: AppState
