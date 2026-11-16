@@ -2,10 +2,10 @@ import Foundation
 
 enum DevicePatchService {
     static func apply(project: PatchProject) throws -> PatchTransactionReceipt {
-        let resolvedProject = try resolveTargets(project: project)
-        let bundleIDs = orderedBundleIdentifiers(in: resolvedProject)
+        let bundleIDs = orderedBundleIdentifiers(in: project)
         return try withResolvedContainers(bundleIDs: bundleIDs) { roots in
-            try PatchTransaction.apply(
+            let resolvedProject = try resolveTargets(project: project, roots: roots)
+            return try PatchTransaction.apply(
                 project: resolvedProject,
                 backupRoot: try PatchProjectLibrary.backupRootURL(),
                 containerResolver: { bundleID in
@@ -19,19 +19,28 @@ enum DevicePatchService {
         }
     }
 
+    /// Resolves rule paths against live containers. Call only while container
+    /// grants are held (iOS 26+ needs the sandbox token for honest fileExists).
+    static func resolveTargets(project: PatchProject) throws -> PatchProject {
+        let bundleIDs = orderedBundleIdentifiers(in: project)
+        return try withResolvedContainers(bundleIDs: bundleIDs) { roots in
+            try resolveTargets(project: project, roots: roots)
+        }
+    }
+
     /// Game updates can move a cache file while keeping its filename unchanged.
     /// Remap only when exactly one regular, non-symlink candidate exists.
-    static func resolveTargets(project: PatchProject) throws -> PatchProject {
+    private static func resolveTargets(
+        project: PatchProject,
+        roots: [String: URL]
+    ) throws -> PatchProject {
         var resolvedRules: [PatchRule] = []
         let fileManager = FileManager.default
 
         for rule in project.rules {
-            guard let rootPath = ContainerStore.resolveAppContainerPath(bundleID: rule.bundleID) else {
+            guard let root = roots[rule.bundleID] else {
                 throw PatchPackageError.targetAppUnavailable(rule.bundleID)
             }
-            let root = PatchPathValidator.canonicalFileURL(
-                URL(fileURLWithPath: rootPath, isDirectory: true)
-            )
             let requested = try PatchPathValidator.resolveContainedTargetURL(
                 relativePath: rule.relativePath,
                 containerRoot: root
@@ -203,6 +212,17 @@ enum DevicePatchService {
         project.allBundleIdentifiers
     }
 
+    /// iOS 26+ backends require a live sandbox grant. Kernel (17/18) returns
+    /// -1 from grantContainerAccess by design; missing grant there is OK.
+    private static var requiresLiveSandboxGrant: Bool {
+        switch SandboxAccess.backend {
+        case .badQuery, .worseQuery:
+            return true
+        case .kernel, .unsupported:
+            return false
+        }
+    }
+
     private static func withResolvedContainers<T>(
         bundleIDs: [String],
         operation: ([String: URL]) throws -> T
@@ -213,6 +233,18 @@ enum DevicePatchService {
             for grant in grants { SandboxAccess.release(grant) }
         }
 
+        if case .unsupported = SandboxAccess.backend {
+            throw PatchPackageError.sandboxAccessFailed(
+                "backend unsupported — iOS \(AppInfo.osVersion) fora da faixa"
+            )
+        }
+
+        if SandboxAccess.backend == .worseQuery, !SandboxAccess.hasAppGroup {
+            throw PatchPackageError.sandboxAccessFailed(
+                "App Group ausente — resign com AltStore/SideStore/Sideloadly"
+            )
+        }
+
         for bundleID in bundleIDs {
             guard let path = ContainerStore.resolveAppContainerPath(bundleID: bundleID),
                   ContainerStore.isApplicationContainerPath(path) else {
@@ -221,8 +253,16 @@ enum DevicePatchService {
             // Keep the token for the whole transaction; a release before the
             // copy/restore would revoke it on bad_query.
             let grant = ContainerStore.grantContainerAccess(path)
-            if grant >= 0 { grants.append(grant) }
-            roots[bundleID] = PatchPathValidator.canonicalFileURL(URL(fileURLWithPath: path, isDirectory: true))
+            if grant >= 0 {
+                grants.append(grant)
+            } else if requiresLiveSandboxGrant {
+                throw PatchPackageError.sandboxAccessFailed(
+                    "grant falhou para \(bundleID) via \(SandboxAccess.backend.displayName)"
+                )
+            }
+            roots[bundleID] = PatchPathValidator.canonicalFileURL(
+                URL(fileURLWithPath: path, isDirectory: true)
+            )
         }
         return try operation(roots)
     }

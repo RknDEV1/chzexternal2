@@ -191,6 +191,8 @@ enum PatchPackageError: Error, Equatable {
     case resetFailed
     case invalidImportLink
     case remoteImportFailed
+    /// Sandbox grant missing/failed for a container (iOS 26+ backends).
+    case sandboxAccessFailed(String)
 }
 
 extension PatchPackageError: LocalizedError {
@@ -218,6 +220,7 @@ extension PatchPackageError: LocalizedError {
         case .resetFailed: return "patch.error.reset"
         case .invalidImportLink: return "patch.error.invalid_import_link"
         case .remoteImportFailed: return "patch.error.remote_import"
+        case .sandboxAccessFailed: return "patch.error.sandbox_access"
         }
     }
 
@@ -233,6 +236,8 @@ extension PatchPackageError: LocalizedError {
         switch self {
         case .targetAppUnavailable(let bundleID), .targetOccupied(let bundleID):
             return bundleID
+        case .sandboxAccessFailed(let detail):
+            return detail
         case .restoreTargetsChanged(let paths):
             return paths.joined(separator: "\n")
         default:
