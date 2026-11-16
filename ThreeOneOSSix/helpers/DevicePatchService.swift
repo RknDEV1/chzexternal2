@@ -41,6 +41,23 @@ enum DevicePatchService {
                 continue
             }
 
+            if let manualRelative = matchingManualProjectTarget(
+                rule: rule,
+                projectID: project.id,
+                root: root,
+                fileManager: fileManager
+            ) {
+                resolvedRules.append(PatchRule(
+                    id: rule.id,
+                    bundleID: rule.bundleID,
+                    relativePath: manualRelative,
+                    replacementFilename: rule.replacementFilename,
+                    replacementData: rule.replacementData
+                ))
+                log("patch: reused manual target \(rule.relativePath) -> \(manualRelative)")
+                continue
+            }
+
             let candidates = matchingFileCandidates(
                 filename: rule.replacementFilename,
                 root: root,
@@ -68,6 +85,33 @@ enum DevicePatchService {
         var resolved = project
         resolved.rules = resolvedRules
         return resolved
+    }
+
+    private static func matchingManualProjectTarget(
+        rule: PatchRule,
+        projectID: UUID,
+        root: URL,
+        fileManager: FileManager
+    ) -> String? {
+        for item in PatchProjectLibrary.load(fileManager: fileManager) {
+            guard let otherProject = item.project, otherProject.id != projectID else { continue }
+            for otherRule in otherProject.rules where
+                otherRule.bundleID == rule.bundleID &&
+                otherRule.replacementData == rule.replacementData
+            {
+                guard let candidate = try? PatchPathValidator.resolveContainedTargetURL(
+                    relativePath: otherRule.relativePath,
+                    containerRoot: root
+                ),
+                let values = try? candidate.resourceValues(
+                    forKeys: [.isRegularFileKey, .isSymbolicLinkKey]
+                ),
+                values.isRegularFile == true,
+                values.isSymbolicLink != true else { continue }
+                return otherRule.relativePath
+            }
+        }
+        return nil
     }
 
     private static func matchingFileCandidates(
