@@ -192,7 +192,7 @@ struct RakiFunctionsView: View {
                     let sourceProject = item.summary.schemaVersion >= 2 && item.canInspectContents
                         ? try PatchProjectLibrary.synchronizeWorkspace(item: item)
                         : baseProject
-                    let project = sourceProject
+                    let project = try DevicePatchService.resolveTargets(project: sourceProject)
                     await MainActor.run {
                         diagnosticDetails = "Bundle ID usado: \(project.allBundleIdentifiers.joined(separator: ", "))\nAlvo selecionado para aplicação."
                     }

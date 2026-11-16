@@ -2,10 +2,11 @@ import Foundation
 
 enum DevicePatchService {
     static func apply(project: PatchProject) throws -> PatchTransactionReceipt {
-        let bundleIDs = orderedBundleIdentifiers(in: project)
+        let resolvedProject = try resolveTargets(project: project)
+        let bundleIDs = orderedBundleIdentifiers(in: resolvedProject)
         return try withResolvedContainers(bundleIDs: bundleIDs) { roots in
             try PatchTransaction.apply(
-                project: project,
+                project: resolvedProject,
                 backupRoot: try PatchProjectLibrary.backupRootURL(),
                 containerResolver: { bundleID in
                     guard let root = roots[bundleID] else {
@@ -16,6 +17,84 @@ enum DevicePatchService {
                 backupCenter: .shared
             )
         }
+    }
+
+    /// Game updates can move a cache file while keeping its filename unchanged.
+    /// Remap only when exactly one regular, non-symlink candidate exists.
+    static func resolveTargets(project: PatchProject) throws -> PatchProject {
+        var resolvedRules: [PatchRule] = []
+        let fileManager = FileManager.default
+
+        for rule in project.rules {
+            guard let rootPath = ContainerStore.resolveAppContainerPath(bundleID: rule.bundleID) else {
+                throw PatchPackageError.targetAppUnavailable(rule.bundleID)
+            }
+            let root = PatchPathValidator.canonicalFileURL(
+                URL(fileURLWithPath: rootPath, isDirectory: true)
+            )
+            let requested = try PatchPathValidator.resolveContainedTargetURL(
+                relativePath: rule.relativePath,
+                containerRoot: root
+            )
+            if fileManager.fileExists(atPath: requested.path) {
+                resolvedRules.append(rule)
+                continue
+            }
+
+            let candidates = matchingFileCandidates(
+                filename: rule.replacementFilename,
+                root: root,
+                fileManager: fileManager
+            )
+            guard candidates.count == 1, let candidate = candidates.first else {
+                let detail = candidates.isEmpty
+                    ? "nenhum candidato encontrado"
+                    : "\(candidates.count) candidatos encontrados"
+                throw PatchPackageError.targetAppUnavailable(
+                    "arquivo não encontrado: \(rule.relativePath) (\(detail))"
+                )
+            }
+            let relative = String(candidate.path.dropFirst(root.path.count + 1))
+            resolvedRules.append(PatchRule(
+                id: rule.id,
+                bundleID: rule.bundleID,
+                relativePath: relative,
+                replacementFilename: rule.replacementFilename,
+                replacementData: rule.replacementData
+            ))
+            log("patch: remapped missing target \(rule.relativePath) -> \(relative)")
+        }
+
+        var resolved = project
+        resolved.rules = resolvedRules
+        return resolved
+    }
+
+    private static func matchingFileCandidates(
+        filename: String,
+        root: URL,
+        fileManager: FileManager
+    ) -> [URL] {
+        guard !filename.isEmpty,
+              let enumerator = fileManager.enumerator(
+                at: root,
+                includingPropertiesForKeys: [.isRegularFileKey, .isSymbolicLinkKey],
+                options: [.skipsHiddenFiles]
+              ) else { return [] }
+
+        var results: [URL] = []
+        for case let candidate as URL in enumerator {
+            guard candidate.lastPathComponent == filename,
+                  candidate.path.hasPrefix(root.path + "/"),
+                  let values = try? candidate.resourceValues(
+                    forKeys: [.isRegularFileKey, .isSymbolicLinkKey]
+                  ),
+                  values.isRegularFile == true,
+                  values.isSymbolicLink != true else { continue }
+            results.append(PatchPathValidator.canonicalFileURL(candidate))
+            if results.count > 1 { break }
+        }
+        return results
     }
 
     static func inspectRestore(receipt: PatchTransactionReceipt) throws -> PatchRestoreInspection {
