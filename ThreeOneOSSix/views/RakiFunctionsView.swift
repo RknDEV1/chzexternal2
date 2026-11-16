@@ -157,7 +157,7 @@ struct RakiFunctionsView: View {
 
     private var sandboxStatusLine: String {
         if sandboxReady {
-            return appState.exploitStatus.description
+            return appState.exploitStatus.displayText(language: language)
         }
         if appState.kernelExploitRunning {
             return "subindo acesso…"
@@ -169,7 +169,7 @@ struct RakiFunctionsView: View {
             return "iOS \(UIDevice.current.systemVersion) fora da faixa"
         }
         if appState.exploitStatus.isFailed {
-            return appState.exploitStatus.description
+            return appState.exploitStatus.displayText(language: language)
         }
         return "aguardando sandbox"
     }
@@ -274,7 +274,7 @@ struct RakiFunctionsView: View {
         guard !isWorking else { return }
         if sandboxReady {
             diagnosticText = "Pronto"
-            diagnosticDetails = "Sandbox OK via \(SandboxAccess.backend.displayName).\n\(appState.exploitStatus.description)"
+            diagnosticDetails = "Sandbox OK via \(SandboxAccess.backend.displayName).\n\(appState.exploitStatus.displayText(language: language))"
         } else if appState.kernelExploitRunning {
             diagnosticText = "Sandbox"
             diagnosticDetails = "Subindo \(SandboxAccess.backend.displayName)… aguarde antes de ativar."
@@ -286,7 +286,7 @@ struct RakiFunctionsView: View {
             diagnosticDetails = "iOS \(UIDevice.current.systemVersion) fora da faixa suportada."
         } else if appState.exploitStatus.isFailed {
             diagnosticText = "Falha"
-            diagnosticDetails = "Sandbox falhou: \(appState.exploitStatus.description)\nToque RETRY ou relance o app."
+            diagnosticDetails = "Sandbox falhou: \(appState.exploitStatus.displayText(language: language))\nToque RETRY ou relance o app."
         } else {
             diagnosticText = "Aguardando"
             diagnosticDetails = "Aguardando sandbox (\(SandboxAccess.backend.displayName))."
