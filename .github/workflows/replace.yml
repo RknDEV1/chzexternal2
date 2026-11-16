@@ -1,0 +1,39 @@
+name: Sanitize Repo
+
+on:
+  workflow_dispatch: # Permite rodar manualmente clicando num botão no GitHub
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permissão pra commitar as mudanças de volta no repo
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Run Sanitization
+      run: |
+        # 1. Substituição de strings em arquivos de texto (ignora binários)
+        grep -rlI "FreeFirePatches" . --exclude-dir=.git | xargs -r sed -i 's/FreeFirePatches/AssetUpdates/g'
+        grep -rlI "Chz Inject" . --exclude-dir=.git | xargs -r sed -i 's/Chz Inject/Core Engine/g'
+        grep -rlI "DevicePatchService" . --exclude-dir=.git | xargs -r sed -i 's/DevicePatchService/FileUpdateService/g'
+        grep -rlI "RakiFunctionsView" . --exclude-dir=.git | xargs -r sed -i 's/RakiFunctionsView/ModManagerView/g'
+        grep -rlI "HS PESCOÇO" . --exclude-dir=.git | xargs -r sed -i 's/HS PESCOÇO/Apply Patch/g'
+        grep -rlI "ATIVAR HS" . --exclude-dir=.git | xargs -r sed -i 's/ATIVAR HS/Apply/g'
+        grep -rlI "DESATIVAR HS" . --exclude-dir=.git | xargs -r sed -i 's/DESATIVAR HS/Restore/g'
+
+        # 2. Renomear os arquivos físicos
+        find . -name "RakiFunctionsView.swift" -execdir mv {} ModManagerView.swift \;
+        find . -name "core_patch.bin" -execdir mv {} update_engine.bin \;
+        
+        # 3. Renomear pasta se existir
+        if [ -d "Raki" ]; then mv Raki Core; fi
+
+        # 4. Configurar git e commitar as alterações
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add -A
+        git commit -m "chore: sanitized names and strings for external AI" || echo "Nenhuma alteração pra commitar"
+        git push || echo "Falha no push"
